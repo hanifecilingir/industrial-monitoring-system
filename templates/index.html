@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Industrial Machine Monitoring Dashboard</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+<div class="container-fluid">
+
+    <!-- HEADER -->
+
+    <div class="dashboard-header">
+
+        <div>
+
+            <h1>Endüstriyel Makine İzleme</h1>
+
+            <p>Üretim Hattı A</p>
+
+        </div>
+
+        <div class="clock" id="clock">
+
+            {{ current_time }}
+
+        </div>
+
+    </div>
+
+
+    <!-- SUMMARY -->
+
+    <div class="summary">
+
+        <div class="summary-card">
+
+            <span class="dot blue"></span>
+
+            <span>TOPLAM MAKİNE</span>
+
+            <strong id="total-machines">
+                {{ total }}
+            </strong>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <span class="dot green"></span>
+
+            <span>ÇALIŞIYOR</span>
+
+            <strong id="running-machines">
+                {{ running }}
+            </strong>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <span class="dot orange"></span>
+
+            <span>UYARI</span>
+
+            <strong id="warning-machines">
+                {{ warning }}
+            </strong>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <span class="dot red"></span>
+
+            <span>KRİTİK</span>
+
+            <strong id="critical-machines">
+                {{ critical }}
+            </strong>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <span class="dot blue"></span>
+
+            <span>ORT. OEE</span>
+
+            <strong>%71.8</strong>
+
+        </div>
+
+    </div>
+
+
+    <!-- MACHINE CARDS -->
+
+    <div class="machine-container">
+
+
+        {% for machine in machines %}
+
+        <div
+            class="machine-card"
+            id="machine-card-{{ loop.index }}"
+            data-machine-id="{{ machine.id }}"
+            data-source="{{ machine.source }}"
+        >
+
+
+            <!-- MACHINE HEADER -->
+
+            <div class="d-flex justify-content-between align-items-center">
+
+                <div>
+
+                    <h3>{{ machine.id }}</h3>
+
+                    <h5>{{ machine.name }}</h5>
+
+                </div>
+
+
+                <h4
+                    class="machine-status"
+                    style="color: {{ machine.color }}"
+                >
+
+                    {{ machine.status }}
+
+                </h4>
+
+            </div>
+
+
+            <hr>
+
+
+            <!-- CHART -->
+
+            <div class="chart-area">
+
+                <canvas
+                    id="chart{{ loop.index }}"
+                ></canvas>
+
+            </div>
+
+
+            <!-- SENSOR VALUES -->
+
+            <div class="sensor-values">
+
+
+                <span>
+
+                    🌡
+
+                    <strong class="temperature-value">
+
+                        {{ machine.temperature }}
+
+                    </strong>
+
+                    °C
+
+                </span>
+
+
+                <span>
+
+                    💧
+
+                    <strong class="humidity-value">
+
+                        {{ machine.humidity }}
+
+                    </strong>
+
+                    %
+
+                </span>
+
+
+                <span>
+
+                    📳
+
+                    <strong class="vibration-value">
+
+                        {{ machine.vibration }}
+
+                    </strong>
+
+                    g
+
+                </span>
+
+
+                <span>
+
+                    🌐
+
+                    <strong class="pressure-value">
+
+                        {{ machine.pressure }}
+
+                    </strong>
+
+                    hPa
+
+                </span>
+
+
+            </div>
+
+
+        </div>
+
+        {% endfor %}
+
+
+    </div>
+
+
+</div>
+
+
+<!-- CHART.JS -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- OUR JAVASCRIPT -->
+
+<script
+    src="{{ url_for('static', filename='js/charts.js') }}"
+></script>
+
+
+</body>
+
+</html>
