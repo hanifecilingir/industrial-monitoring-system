@@ -140,12 +140,12 @@ def get_real_machine():
     # MAKİNE DURUMU
     # --------------------------------------
 
-    if temperature < 40 and vibration < 1.5:
+    if temperature < 30 and vibration < 1.5:
 
         status = "RUNNING"
         color = "green"
 
-    elif temperature < 50 and vibration < 2.5:
+    elif temperature < 35 and vibration < 2.5:
 
         status = "WARNING"
         color = "orange"

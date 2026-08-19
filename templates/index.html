@@ -1,264 +1,198 @@
 <!DOCTYPE html>
 <html lang="tr">
-
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Industrial Machine Monitoring Dashboard</title>
-
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    >
-
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='css/style.css') }}"
-    >
-
+    <title>Industrial Monitor - Production Line A</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-
-
 <body>
 
-<div class="container-fluid">
+    <!-- SOL SABİT MENÜ -->
+    <aside class="sidebar">
+        <div class="sidebar-title">
+            <span>⚙</span> INDUSTRIAL MONITOR
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item active"><a href="#" data-target="overview"><span>◉</span> Genel Bakış</a></li>
+            <li class="nav-item"><a href="#" data-target="MTR-01"><span>⚙</span> MTR-01</a></li>
+            <li class="nav-item"><a href="#" data-target="MTR-02"><span>⚙</span> MTR-02</a></li>
+            <li class="nav-item"><a href="#" data-target="MTR-03"><span>⚙</span> MTR-03</a></li>
+            <li class="nav-item"><a href="#" data-target="analysis"><span>📊</span> Analiz</a></li>
+            <li class="nav-item"><a href="#" data-target="alarms"><span>⚠</span> Alarmlar</a></li>
+        </ul>
+    </aside>
 
-    <!-- HEADER -->
-
-    <div class="dashboard-header">
-
-        <div>
-
-            <h1>Endüstriyel Makine İzleme</h1>
-
-            <p>Üretim Hattı A</p>
-
+    <!-- ANA İÇERİK -->
+    <main class="main-container">
+        <!-- Header -->
+        <div class="header-section">
+            <div class="header-title">
+                <h1>INDUSTRIAL MONITORING</h1>
+                <p>Production Line A</p>
+            </div>
+            <div class="header-status">
+                <div class="sys-online">● SYSTEM ONLINE</div>
+                <div class="live-clock" id="clock-display">--:--:--</div>
+            </div>
         </div>
 
-        <div class="clock" id="clock">
-
-            {{ current_time }}
-
+        <!-- KPI Kartları (Genel Bakış) -->
+        <div class="kpi-grid" id="main-kpi-grid">
+            <div class="kpi-card">
+                <span class="kpi-label">MACHINES</span>
+                <span class="kpi-val" id="kpi-total">3</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-label">RUNNING</span>
+                <span class="kpi-val" style="color: var(--color-green);" id="kpi-running">0</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-label">WARNINGS</span>
+                <span class="kpi-val" style="color: var(--color-orange);" id="kpi-warning">0</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-label">CRITICAL</span>
+                <span class="kpi-val" style="color: var(--color-red);" id="kpi-critical">0</span>
+            </div>
         </div>
 
-    </div>
-
-
-    <!-- SUMMARY -->
-
-    <div class="summary">
-
-        <div class="summary-card">
-
-            <span class="dot blue"></span>
-
-            <span>TOPLAM MAKİNE</span>
-
-            <strong id="total-machines">
-                {{ total }}
-            </strong>
-
-        </div>
-
-
-        <div class="summary-card">
-
-            <span class="dot green"></span>
-
-            <span>ÇALIŞIYOR</span>
-
-            <strong id="running-machines">
-                {{ running }}
-            </strong>
-
-        </div>
-
-
-        <div class="summary-card">
-
-            <span class="dot orange"></span>
-
-            <span>UYARI</span>
-
-            <strong id="warning-machines">
-                {{ warning }}
-            </strong>
-
-        </div>
-
-
-        <div class="summary-card">
-
-            <span class="dot red"></span>
-
-            <span>KRİTİK</span>
-
-            <strong id="critical-machines">
-                {{ critical }}
-            </strong>
-
-        </div>
-
-
-        <div class="summary-card">
-
-            <span class="dot blue"></span>
-
-            <span>ORT. OEE</span>
-
-            <strong>%71.8</strong>
-
-        </div>
-
-    </div>
-
-
-    <!-- MACHINE CARDS -->
-
-    <div class="machine-container">
-
-
-        {% for machine in machines %}
-
-        <div
-            class="machine-card"
-            id="machine-card-{{ loop.index }}"
-            data-machine-id="{{ machine.id }}"
-            data-source="{{ machine.source }}"
-        >
-
-
-            <!-- MACHINE HEADER -->
-
-            <div class="d-flex justify-content-between align-items-center">
-
-                <div>
-
-                    <h3>{{ machine.id }}</h3>
-
-                    <h5>{{ machine.name }}</h5>
-
+        <!-- Makine Detay ve Trend Kartı -->
+        <div class="main-machine-card" id="main-machine-card">
+            <div class="mm-header">
+                <div class="mm-title">
+                    <span class="mm-id" id="card-m-id">MTR-01</span>
+                    <span class="mm-name" id="card-m-name">CONVEYOR MOTOR</span>
                 </div>
-
-
-                <h4
-                    class="machine-status"
-                    style="color: {{ machine.color }}"
-                >
-
-                    {{ machine.status }}
-
-                </h4>
-
+                <div class="status-pill green" id="m1-status-pill">● RUNNING</div>
             </div>
 
-
-            <hr>
-
-
-            <!-- CHART -->
-
-            <div class="chart-area">
-
-                <canvas
-                    id="chart{{ loop.index }}"
-                ></canvas>
-
+            <div class="mm-metrics">
+                <div class="metric-col">
+                    <span class="m-tag">TEMPERATURE</span>
+                    <span class="m-number" id="m1-temp">-- °C</span>
+                    <span class="m-subtag" id="m1-temp-sub">NORMAL</span>
+                </div>
+                <div class="metric-col">
+                    <span class="m-tag">VIBRATION</span>
+                    <span class="m-number" id="m1-vib">-- g</span>
+                    <span class="m-subtag" id="m1-vib-sub">NORMAL</span>
+                </div>
+                <div class="metric-col">
+                    <span class="m-tag">HUMIDITY</span>
+                    <span class="m-number" id="m1-hum">-- %</span>
+                    <span class="m-subtag" id="m1-hum-sub">NORMAL</span>
+                </div>
             </div>
 
-
-            <!-- SENSOR VALUES -->
-
-            <div class="sensor-values">
-
-
-                <span>
-
-                    🌡
-
-                    <strong class="temperature-value">
-
-                        {{ machine.temperature }}
-
-                    </strong>
-
-                    °C
-
-                </span>
-
-
-                <span>
-
-                    💧
-
-                    <strong class="humidity-value">
-
-                        {{ machine.humidity }}
-
-                    </strong>
-
-                    %
-
-                </span>
-
-
-                <span>
-
-                    📳
-
-                    <strong class="vibration-value">
-
-                        {{ machine.vibration }}
-
-                    </strong>
-
-                    g
-
-                </span>
-
-
-                <span>
-
-                    🌐
-
-                    <strong class="pressure-value">
-
-                        {{ machine.pressure }}
-
-                    </strong>
-
-                    hPa
-
-                </span>
-
-
+            <div class="chart-wrapper">
+                <canvas id="trendChart"></canvas>
             </div>
-
-
         </div>
 
-        {% endfor %}
+        <!-- ANALİZ EKRANI -->
+        <div id="analysis-view" style="display: none; flex-direction: column; gap: 20px;">
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <span class="kpi-label">OVERALL OEE</span>
+                    <span class="kpi-val" style="color: var(--color-blue);">% 84.6</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">LINE HEALTH INDEX</span>
+                    <span class="kpi-val" style="color: var(--color-green);">% 92.1</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">LINE UPTIME</span>
+                    <span class="kpi-val">148.5h</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">NEXT MAINTENANCE</span>
+                    <span class="kpi-val" style="color: var(--color-orange);">12 Gün</span>
+                </div>
+            </div>
 
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="main-machine-card" style="height: 260px;">
+                    <span class="m-tag" style="margin-bottom: 10px;">MAKİNELER ARASI ORTALAMA TİTREŞİM (g)</span>
+                    <div style="position: relative; height: 180px; width: 100%;">
+                        <canvas id="analysisBarChart"></canvas>
+                    </div>
+                </div>
+                <div class="main-machine-card" style="height: 260px;">
+                    <span class="m-tag" style="margin-bottom: 10px;">DURUŞ VE RİSK DAĞILIMI</span>
+                    <div style="position: relative; height: 180px; width: 100%;">
+                        <canvas id="analysisPieChart"></canvas>
+                    </div>
+                </div>
+            </div>
 
-    </div>
+            <div>
+                <div class="section-title">KESTİRİMCİ BAKIM & RİSK TEŞHİS RAPORU</div>
+                <div class="status-table-card">
+                    <div class="status-row">
+                        <div class="m-info-left">
+                            <span class="m-info-id">MTR-01</span>
+                            <span class="m-info-name">Konveyör Motoru - Titreşim ve sıcaklık nominal. Mekanik aşınma yok.</span>
+                        </div>
+                        <div class="status-dot" style="color: var(--color-green);">Düşük Risk (%6)</div>
+                    </div>
+                    <div class="status-row">
+                        <div class="m-info-left">
+                            <span class="m-info-id">MTR-02</span>
+                            <span class="m-info-name">Hidrolik Pompa - Sıcaklık sınırda. Yağlama seviyesi kontrol edilmeli.</span>
+                        </div>
+                        <div class="status-dot" style="color: var(--color-orange);">Orta Risk (%32)</div>
+                    </div>
+                    <div class="status-row">
+                        <div class="m-info-left">
+                            <span class="m-info-id">MTR-03</span>
+                            <span class="m-info-name">Soğutma Fanı - Hat çevrimdışı. Sargı izolasyon testi planlandı.</span>
+                        </div>
+                        <div class="status-dot" style="color: var(--color-gray);">Durdu (%0)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
+        <!-- ALARMLAR EKRANI -->
+        <div id="alarms-view" style="display: none; flex-direction: column; gap: 20px;">
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <span class="kpi-label">AKTİF ALARMLAR</span>
+                    <span class="kpi-val" style="color: var(--color-red);" id="alarm-cnt-active">0</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">BEKLEYEN UYARILAR</span>
+                    <span class="kpi-val" style="color: var(--color-orange);" id="alarm-cnt-warning">0</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">SİSTEM DURUMU</span>
+                    <span class="kpi-val" style="color: var(--color-green);" id="alarm-sys-status">STABİL</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">TOPLAM LOG KAYDI</span>
+                    <span class="kpi-val" id="alarm-cnt-total">0</span>
+                </div>
+            </div>
 
-</div>
+            <div>
+                <div class="section-title">CANLI OLAY & ALARM GÜNLÜĞÜ (EVENT LOG)</div>
+                <div class="status-table-card" id="alarms-table-container">
+                    <div style="padding: 24px; text-align: center; color: var(--text-muted);">
+                        Sistemde kayıtlı aktif veya geçmiş alarm bulunmuyor.
+                    </div>
+                </div>
+            </div>
+        </div>
 
+        <!-- Alt Makine Listesi -->
+        <div id="status-section-wrapper">
+            <div class="section-title">MACHINE STATUS</div>
+            <div class="status-table-card" id="machine-status-list"></div>
+        </div>
+    </main>
 
-<!-- CHART.JS -->
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<!-- OUR JAVASCRIPT -->
-
-<script
-    src="{{ url_for('static', filename='js/charts.js') }}"
-></script>
-
-
+    <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
 </body>
-
 </html>
