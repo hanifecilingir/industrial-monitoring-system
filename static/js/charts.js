@@ -1,6 +1,7 @@
-const historyLength = 20;
+const historyLength = 60;
 let selectedMachine = 'overview';
 let alarmHistory = [];
+
 
 // ==========================================
 // 1. ANA TREND GRAFİĞİ KURULUMU
@@ -55,8 +56,8 @@ const trendChart = new Chart(ctx, {
         },
         scales: {
             x: { grid: { color: "#1f293d" }, ticks: { color: "#6b7280", font: { size: 10 }, maxTicksLimit: 8 } },
-            yTemp: { type: "linear", position: "left", suggestedMin: 15, suggestedMax: 50, grid: { color: "#1f293d" }, ticks: { color: "#10b981", font: { size: 10 } } },
-            yVib: { type: "linear", position: "right", suggestedMin: 0.0, suggestedMax: 1.5, grid: { drawOnChartArea: false }, ticks: { color: "#f59e0b", font: { size: 10 } } }
+            yTemp: { type: "linear", position: "left", suggestedMin: 20, suggestedMax:40, grid: { color: "#1f293d" }, ticks: { color: "#10b981" } },
+            yVib: { type: "linear", position: "right", suggestedMin: 0.0, suggestedMax: 1.5, grid: { drawOnChartArea: false }, ticks: { color: "#f59e0b" } }
         }
     }
 });
@@ -118,7 +119,7 @@ function initAnalysisCharts() {
 }
 
 // ==========================================
-// 3. CANLI VERİ GÜNCELLEME VE MOTOR MANTIĞI
+// 3. CANLI VERİ GÜNCELLEME DÖNGÜSÜ
 // ==========================================
 async function updateDashboard() {
     try {
@@ -132,7 +133,7 @@ async function updateDashboard() {
         document.getElementById("kpi-warning").innerText = data.warning;
         document.getElementById("kpi-critical").innerText = data.critical;
 
-        // Alarm Loglama Kontrolü
+        // Alarm Loglama
         data.machines.forEach(m => {
             if (m.show_data && (m.status === "WARNING" || m.status === "CRITICAL")) {
                 const lastLog = alarmHistory[0];
@@ -159,52 +160,52 @@ async function updateDashboard() {
             document.getElementById("alarm-sys-status").style.color = data.critical > 0 ? "var(--color-red)" : (data.warning > 0 ? "var(--color-orange)" : "var(--color-green)");
         }
 
-        // Aktif Makineyi Seçme
-        let currentMachine = data.machines[0];
-        if (selectedMachine === "MTR-02") currentMachine = data.machines[1];
-        if (selectedMachine === "MTR-03") currentMachine = data.machines[2];
+        // Tekil Makine Detay Sayfası Açık İse Güncelle
+        if (selectedMachine !== "overview" && selectedMachine !== "analysis" && selectedMachine !== "alarms") {
+            let currentMachine = data.machines[0];
+            if (selectedMachine === "MTR-02") currentMachine = data.machines[1];
+            if (selectedMachine === "MTR-03") currentMachine = data.machines[2];
 
-        // Kart Başlığı ve Rozet
-        document.getElementById("card-m-id").innerText = currentMachine.id;
-        document.getElementById("card-m-name").innerText = currentMachine.name.toUpperCase();
+            document.getElementById("card-m-id").innerText = currentMachine.id;
+            document.getElementById("card-m-name").innerText = currentMachine.name.toUpperCase();
 
-        const pill = document.getElementById("m1-status-pill");
-        pill.className = `status-pill ${currentMachine.color}`;
-        pill.innerText = `● ${currentMachine.status}`;
+            const pill = document.getElementById("m1-status-pill");
+            pill.className = `status-pill ${currentMachine.color}`;
+            pill.innerText = `● ${currentMachine.status}`;
 
-        // Değerleri Yazdır ve Grafiği Besle
-        if (currentMachine.show_data) {
-            document.getElementById("m1-temp").innerText = `${currentMachine.temperature} °C`;
-            document.getElementById("m1-vib").innerText = `${currentMachine.vibration} g`;
-            document.getElementById("m1-hum").innerText = `${currentMachine.humidity} %`;
+            if (currentMachine.show_data) {
+                document.getElementById("m1-temp").innerText = `${currentMachine.temperature} °C`;
+                document.getElementById("m1-vib").innerText = `${currentMachine.vibration} g`;
+                document.getElementById("m1-hum").innerText = `${currentMachine.humidity} %`;
 
-            const tempSub = document.getElementById("m1-temp-sub");
-            const vibSub = document.getElementById("m1-vib-sub");
+                const tempSub = document.getElementById("m1-temp-sub");
+                const vibSub = document.getElementById("m1-vib-sub");
 
-            tempSub.innerText = currentMachine.temperature > 35 ? "CRITICAL" : (currentMachine.temperature > 30 ? "WARNING" : "NORMAL");
-            tempSub.style.color = currentMachine.temperature > 35 ? "var(--color-red)" : (currentMachine.temperature > 30 ? "var(--color-orange)" : "var(--color-green)");
+                tempSub.innerText = currentMachine.temperature > 35 ? "CRITICAL" : (currentMachine.temperature > 30 ? "WARNING" : "NORMAL");
+                tempSub.style.color = currentMachine.temperature > 35 ? "var(--color-red)" : (currentMachine.temperature > 30 ? "var(--color-orange)" : "var(--color-green)");
 
-            vibSub.innerText = currentMachine.vibration > 2.5 ? "CRITICAL" : (currentMachine.vibration > 1.5 ? "WARNING" : "NORMAL");
-            vibSub.style.color = currentMachine.vibration > 2.5 ? "var(--color-red)" : (currentMachine.vibration > 1.5 ? "var(--color-orange)" : "var(--color-green)");
+                vibSub.innerText = currentMachine.vibration > 2.5 ? "CRITICAL" : (currentMachine.vibration > 1.5 ? "WARNING" : "NORMAL");
+                vibSub.style.color = currentMachine.vibration > 2.5 ? "var(--color-red)" : (currentMachine.vibration > 1.5 ? "var(--color-orange)" : "var(--color-green)");
 
-            trendChart.data.labels.push(data.time);
-            trendChart.data.datasets[0].data.push(currentMachine.temperature);
-            trendChart.data.datasets[1].data.push(currentMachine.vibration);
+                trendChart.data.labels.push(data.time);
+                trendChart.data.datasets[0].data.push(currentMachine.temperature);
+                trendChart.data.datasets[1].data.push(currentMachine.vibration);
 
-            if (trendChart.data.labels.length > historyLength) {
-                trendChart.data.labels.shift();
-                trendChart.data.datasets[0].data.shift();
-                trendChart.data.datasets[1].data.shift();
+                if (trendChart.data.labels.length > historyLength) {
+                    trendChart.data.labels.shift();
+                    trendChart.data.datasets[0].data.shift();
+                    trendChart.data.datasets[1].data.shift();
+                }
+                trendChart.update();
+            } else {
+                document.getElementById("m1-temp").innerText = "--";
+                document.getElementById("m1-vib").innerText = "--";
+                document.getElementById("m1-hum").innerText = "--";
+                document.getElementById("m1-temp-sub").innerText = "STOPPED";
+                document.getElementById("m1-temp-sub").style.color = "var(--color-gray)";
+                document.getElementById("m1-vib-sub").innerText = "STOPPED";
+                document.getElementById("m1-vib-sub").style.color = "var(--color-gray)";
             }
-            trendChart.update();
-        } else {
-            document.getElementById("m1-temp").innerText = "--";
-            document.getElementById("m1-vib").innerText = "--";
-            document.getElementById("m1-hum").innerText = "--";
-            document.getElementById("m1-temp-sub").innerText = "STOPPED";
-            document.getElementById("m1-temp-sub").style.color = "var(--color-gray)";
-            document.getElementById("m1-vib-sub").innerText = "STOPPED";
-            document.getElementById("m1-vib-sub").style.color = "var(--color-gray)";
         }
 
         // Machine Status Listesi
@@ -231,7 +232,6 @@ async function updateDashboard() {
             });
         }
 
-        // Eğer Alarm sekmesi açıksa tabloyu yenile
         if (selectedMachine === "alarms") {
             renderAlarmsTable();
         }
@@ -242,7 +242,7 @@ async function updateDashboard() {
 }
 
 // ==========================================
-// 4. MENÜ GEÇİŞLERİ VE EVENT LISTENERS
+// 4. MENÜ GEÇİŞ DİNLEYİCİSİ
 // ==========================================
 document.querySelectorAll(".nav-menu .nav-item a").forEach(link => {
     link.addEventListener("click", function(e) {
@@ -254,13 +254,22 @@ document.querySelectorAll(".nav-menu .nav-item a").forEach(link => {
         selectedMachine = this.getAttribute("data-target");
 
         const mainKpiGrid = document.getElementById("main-kpi-grid");
+        const maintenanceCards = document.getElementById("maintenance-overview");
         const mainCard = document.getElementById("main-machine-card");
         const statusWrapper = document.getElementById("status-section-wrapper");
         const analysisView = document.getElementById("analysis-view");
         const alarmsView = document.getElementById("alarms-view");
 
-        if (selectedMachine === "analysis") {
+        if (selectedMachine === "overview") {
+            mainKpiGrid.style.display = "grid";
+            maintenanceCards.style.display = "grid";
+            mainCard.style.display = "none";
+            statusWrapper.style.display = "block";
+            analysisView.style.display = "none";
+            alarmsView.style.display = "none";
+        } else if (selectedMachine === "analysis") {
             mainKpiGrid.style.display = "none";
+            maintenanceCards.style.display = "none";
             mainCard.style.display = "none";
             statusWrapper.style.display = "none";
             alarmsView.style.display = "none";
@@ -268,22 +277,22 @@ document.querySelectorAll(".nav-menu .nav-item a").forEach(link => {
             initAnalysisCharts();
         } else if (selectedMachine === "alarms") {
             mainKpiGrid.style.display = "none";
+            maintenanceCards.style.display = "none";
             mainCard.style.display = "none";
             statusWrapper.style.display = "none";
             analysisView.style.display = "none";
             alarmsView.style.display = "flex";
             renderAlarmsTable();
         } else {
-            mainKpiGrid.style.display = "grid";
+            // MTR-01, MTR-02, MTR-03
+            mainKpiGrid.style.display = "none";
+            maintenanceCards.style.display = "none";
             mainCard.style.display = "flex";
-            statusWrapper.style.display = "block";
+            statusWrapper.style.display = "none";
             analysisView.style.display = "none";
             alarmsView.style.display = "none";
 
-            trendChart.data.labels = [];
-            trendChart.data.datasets[0].data = [];
-            trendChart.data.datasets[1].data = [];
-            trendChart.update();
+            loadInitialHistory();
         }
     });
 });
@@ -300,7 +309,10 @@ function renderAlarmsTable() {
     let rowsHtml = "";
     alarmHistory.forEach(log => {
         let badgeColor = log.status === "CRITICAL" ? "var(--color-red)" : "var(--color-orange)";
-        let reason = log.temp > 35 ? `Yüksek Sıcaklık (${log.temp} °C)` : `Yüksek Titreşim (${log.vib} g)`;
+        let reasons = [];
+        if (log.temp > 35) reasons.push(`Yüksek Sıcaklık (${log.temp} °C)`);
+        if (log.vib > 1.5) reasons.push(`Yüksek Titreşim (${log.vib} g)`);
+        let reason = reasons.length > 0 ? reasons.join(" & ") : log.status;
 
         rowsHtml += `
             <div class="status-row">
@@ -317,7 +329,58 @@ function renderAlarmsTable() {
 
     container.innerHTML = rowsHtml;
 }
+// Sayfa ilk açıldığında veritabanından geçmişi çekip grafiği doldurur
+async function loadInitialHistory() {
+    try {
+        const response = await fetch("/api/history/MTR-01");
+        const history = await response.json();
+        
+        if (Array.isArray(history) && history.length > 0) {
+            trendChart.data.labels = history.map(r => {
+                const parts = r.time.split(" ");
+                return parts.length > 1 ? parts[1] : r.time;
+            });
+            trendChart.data.datasets[0].data = history.map(r => r.temp);
+            trendChart.data.datasets[1].data = history.map(r => r.vib);
+            trendChart.update();
+        }
+    } catch (err) {
+        console.error("Geçmiş veriler yüklenemedi:", err);
+    }
+}
 
-// 1 saniyede bir güncelle
+function updateMaintenanceCards() {
+    const today = new Date();
+
+    // Makinelerin planlanan bir sonraki bakım tarihleri ve toplam ömürleri
+    const schedules = [
+        { id: "m1", target: new Date("2027-05-25"), maxDays: 365 },
+        { id: "m2", target: new Date("2026-09-25"), maxDays: 180 },
+        { id: "m3", target: new Date("2026-08-28"), maxDays: 150 }
+    ];
+
+    schedules.forEach(item => {
+        const diffTime = item.target - today;
+        const diffDays = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+        const pct = Math.min(100, Math.max(0, Math.round((diffDays / item.maxDays) * 100)));
+
+        const pctEl = document.getElementById(`${item.id}-maint-pct`);
+        const daysEl = document.getElementById(`${item.id}-days-left`);
+        const targetEl = document.getElementById(`${item.id}-target-date`);
+
+        if (pctEl && daysEl && targetEl) {
+            pctEl.innerText = `${pct}%`;
+            daysEl.innerText = `${diffDays} Gün`;
+            targetEl.innerText = item.target.toLocaleDateString("tr-TR");
+        }
+    });
+}
+
+// Sayfa açıldığında hesapla
+updateMaintenanceCards();
+
+// Başlangıçta çalıştır
+loadInitialHistory();
+
 setInterval(updateDashboard, 1000);
 updateDashboard();

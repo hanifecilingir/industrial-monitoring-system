@@ -3,16 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Industrial Monitor - Production Line A</title>
+      <!-- Dashboard sayfa başlığı -->
+    <title>ENDÜSTRİYEL İZLEME - Üretim Hattı A</title>
+    <!-- Flask üzerinden CSS dosyasının bağlanması -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Grafiklerin oluşturulması için Chart.js kütüphanesi -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-
     <!-- SOL SABİT MENÜ -->
     <aside class="sidebar">
         <div class="sidebar-title">
-            <span>⚙</span> INDUSTRIAL MONITOR
+    <!-- Dashboard başlığı -->
+            <span>⚙</span> ENDÜSTRİYEL İZLEME
         </div>
         <ul class="nav-menu">
             <li class="nav-item active"><a href="#" data-target="overview"><span>◉</span> Genel Bakış</a></li>
@@ -23,69 +26,129 @@
             <li class="nav-item"><a href="#" data-target="alarms"><span>⚠</span> Alarmlar</a></li>
         </ul>
     </aside>
-
     <!-- ANA İÇERİK -->
     <main class="main-container">
         <!-- Header -->
         <div class="header-section">
             <div class="header-title">
-                <h1>INDUSTRIAL MONITORING</h1>
-                <p>Production Line A</p>
+                <h1>ENDÜSTRİYEL İZLEME</h1>
+                <p>A Üretim Hattı</p>
             </div>
             <div class="header-status">
-                <div class="sys-online">● SYSTEM ONLINE</div>
+                <div class="sys-online">● Sistem Çevrimiçi</div>
                 <div class="live-clock" id="clock-display">--:--:--</div>
             </div>
         </div>
-
-        <!-- KPI Kartları (Genel Bakış) -->
+        <!-- 4 KPI Kartı (Genel Bakış) -->
         <div class="kpi-grid" id="main-kpi-grid">
             <div class="kpi-card">
-                <span class="kpi-label">MACHINES</span>
+                <span class="kpi-label">Makineler</span>
                 <span class="kpi-val" id="kpi-total">3</span>
             </div>
             <div class="kpi-card">
-                <span class="kpi-label">RUNNING</span>
+                <span class="kpi-label">Çalışıyor</span>
                 <span class="kpi-val" style="color: var(--color-green);" id="kpi-running">0</span>
             </div>
             <div class="kpi-card">
-                <span class="kpi-label">WARNINGS</span>
+                <span class="kpi-label">Uyarı</span>
                 <span class="kpi-val" style="color: var(--color-orange);" id="kpi-warning">0</span>
             </div>
             <div class="kpi-card">
-                <span class="kpi-label">CRITICAL</span>
+                <span class="kpi-label">Kritik</span>
                 <span class="kpi-val" style="color: var(--color-red);" id="kpi-critical">0</span>
             </div>
         </div>
 
-        <!-- Makine Detay ve Trend Kartı -->
-        <div class="main-machine-card" id="main-machine-card">
+        <!-- GENEL BAKIŞ: BAKIM & KALAN ÖMÜR KARTLARI -->
+        <div id="maintenance-overview" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+            
+            <!-- Kart 1: MTR-01 -->
+            <div class="main-machine-card maintenance-card">
+                <div class="maint-header">
+                    <span class="maint-title">MTR-01 Konveyör Motoru Ömrü</span>
+                    <span class="badge badge-green" id="m1-maint-badge">AKTİF</span>
+                </div>
+                <div class="maint-body">
+                    <div class="maint-circle green" id="m1-maint-circle">
+                        <span class="maint-pct" id="m1-maint-pct">--%</span>
+                    </div>
+                    <div class="maint-info">
+                        <div class="maint-row"><span>Maksimum:</span> <strong>365 Gün</strong></div>
+                        <div class="maint-row"><span>Hedef Bakım:</span> <strong id="m1-target-date">--</strong></div>
+                        <div class="maint-row highlight green" id="m1-maint-row"><span>Kalan:</span> <strong id="m1-days-left">-- Gün</strong></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kart 2: MTR-02 -->
+            <div class="main-machine-card maintenance-card">
+                <div class="maint-header">
+                    <span class="maint-title">MTR-02 Hidrolik Pompa Ömrü</span>
+                    <span class="badge badge-orange" id="m2-maint-badge">UYARI</span>
+                </div>
+                <div class="maint-body">
+                    <div class="maint-circle orange" id="m2-maint-circle">
+                        <span class="maint-pct" id="m2-maint-pct">--%</span>
+                    </div>
+                    <div class="maint-info">
+                        <div class="maint-row"><span>Maksimum:</span> <strong>180 Gün</strong></div>
+                        <div class="maint-row"><span>Hedef Bakım:</span> <strong id="m2-target-date">--</strong></div>
+                        <div class="maint-row highlight orange" id="m2-maint-row"><span>Kalan:</span> <strong id="m2-days-left">-- Gün</strong></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kart 3: MTR-03 -->
+            <div class="main-machine-card maintenance-card">
+                <div class="maint-header">
+                    <span class="maint-title">MTR-03 Soğutucu Fan Bakımı</span>
+                    <span class="badge badge-red" id="m3-maint-badge">KRİTİK</span>
+                </div>
+                <div class="maint-body">
+                    <div class="maint-circle red" id="m3-maint-circle">
+                        <span class="maint-pct" id="m3-maint-pct">--%</span>
+                    </div>
+                    <div class="maint-info">
+                        <div class="maint-row"><span>Maksimum:</span> <strong>150 Gün</strong></div>
+                        <div class="maint-row"><span>Hedef Bakım:</span> <strong id="m3-target-date">--</strong></div>
+                        <div class="maint-row highlight red" id="m3-maint-row"><span>Kalan:</span> <strong id="m3-days-left">-- Gün</strong></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- TEKİL MAKİNE DETAY KARTI (MTR-01, MTR-02, MTR-03 tıklandığında açılır) -->
+        <div class="main-machine-card" id="main-machine-card" style="display: none;">
             <div class="mm-header">
                 <div class="mm-title">
                     <span class="mm-id" id="card-m-id">MTR-01</span>
-                    <span class="mm-name" id="card-m-name">CONVEYOR MOTOR</span>
+                    <span class="mm-name" id="card-m-name">Konveyör Motoru</span>
                 </div>
-                <div class="status-pill green" id="m1-status-pill">● RUNNING</div>
+                <div class="status-pill green" id="m1-status-pill">● Çalışıyor</div>
             </div>
-
+             <!-- Sensör ölçümleri -->
             <div class="mm-metrics">
                 <div class="metric-col">
-                    <span class="m-tag">TEMPERATURE</span>
+                     <!-- Sıcaklık -->
+                    <span class="m-tag">Sıcaklık</span>
                     <span class="m-number" id="m1-temp">-- °C</span>
                     <span class="m-subtag" id="m1-temp-sub">NORMAL</span>
                 </div>
+                 <!-- Titreşim -->
                 <div class="metric-col">
-                    <span class="m-tag">VIBRATION</span>
+                    <span class="m-tag">Titreşim</span>
                     <span class="m-number" id="m1-vib">-- g</span>
                     <span class="m-subtag" id="m1-vib-sub">NORMAL</span>
                 </div>
+                 <!-- Nem -->
                 <div class="metric-col">
-                    <span class="m-tag">HUMIDITY</span>
+                    <span class="m-tag">Nem</span>
                     <span class="m-number" id="m1-hum">-- %</span>
                     <span class="m-subtag" id="m1-hum-sub">NORMAL</span>
                 </div>
             </div>
-
+   <!-- Sensör verilerinin zamana bağlı grafik gösterimi -->
             <div class="chart-wrapper">
                 <canvas id="trendChart"></canvas>
             </div>
@@ -95,19 +158,19 @@
         <div id="analysis-view" style="display: none; flex-direction: column; gap: 20px;">
             <div class="kpi-grid">
                 <div class="kpi-card">
-                    <span class="kpi-label">OVERALL OEE</span>
+                    <span class="kpi-label">Genel Ekipman Verimliliği (OEE)</span>
                     <span class="kpi-val" style="color: var(--color-blue);">% 84.6</span>
                 </div>
                 <div class="kpi-card">
-                    <span class="kpi-label">LINE HEALTH INDEX</span>
+                    <span class="kpi-label">Hat Sağlık İndeksi</span>
                     <span class="kpi-val" style="color: var(--color-green);">% 92.1</span>
                 </div>
                 <div class="kpi-card">
-                    <span class="kpi-label">LINE UPTIME</span>
+                    <span class="kpi-label">Toplam Çalışma Süresi</span>
                     <span class="kpi-val">148.5h</span>
                 </div>
                 <div class="kpi-card">
-                    <span class="kpi-label">NEXT MAINTENANCE</span>
+                    <span class="kpi-label">Sonraki Bakıma Kalan</span>
                     <span class="kpi-val" style="color: var(--color-orange);">12 Gün</span>
                 </div>
             </div>
@@ -188,7 +251,7 @@
 
         <!-- Alt Makine Listesi -->
         <div id="status-section-wrapper">
-            <div class="section-title">MACHINE STATUS</div>
+            <div class="section-title">Makine Durumu</div>
             <div class="status-table-card" id="machine-status-list"></div>
         </div>
     </main>
